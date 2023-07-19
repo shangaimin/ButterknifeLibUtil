@@ -1,4 +1,4 @@
-package com.sgx.ioc_annotation_lib;
+package com.sgx.ioc_annotation_lib.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

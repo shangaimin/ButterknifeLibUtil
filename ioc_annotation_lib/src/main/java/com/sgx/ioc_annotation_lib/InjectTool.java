@@ -1,13 +1,19 @@
 package com.sgx.ioc_annotation_lib;
 
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 
+import com.sgx.ioc_annotation_lib.annation_common.OnBaseCommon;
+import com.sgx.ioc_annotation_lib.annotation.BindView;
+import com.sgx.ioc_annotation_lib.annotation.ContentView;
+import com.sgx.ioc_annotation_lib.annotation.OnClick;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
+import java.lang.reflect.Proxy;
 
 public class InjectTool {
     private static final String TAG = InjectTool.class.getSimpleName();
@@ -16,6 +22,59 @@ public class InjectTool {
         injectSetContentView(object);
         injectBindView(object);
         injectOnClick(object);
+
+
+        //通用适配事件代码
+        injectEvent(object);
+    }
+
+    private static void injectEvent(Object object) {
+        Class<?> mainClasses = object.getClass();
+        Method[] declareMethods = mainClasses.getDeclaredMethods();
+        for (Method declareMethod : declareMethods) {
+            declareMethod.setAccessible(true);
+            Annotation[] annotations = declareMethod.getAnnotations();
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annotationType = annotation.annotationType();
+                OnBaseCommon onBaseCommon = annotationType.getAnnotation(OnBaseCommon.class);
+                if (null == onBaseCommon) {
+                    Log.d(TAG, "onBaseCommon注解为null");
+                    continue;
+                }
+                String setCommonListener = onBaseCommon.setCommonListener();
+                Class setCommonObjectListener = onBaseCommon.setCommonObjectListener();
+                String callbackMethod = onBaseCommon.callbackMethod();
+                try {
+                    Method valueMethod = annotationType.getDeclaredMethod("value");
+                    valueMethod.setAccessible(true);
+                    int value = (int) valueMethod.invoke(annotation);
+
+                    Method findViewById = mainClasses.getMethod("findViewById", int.class);
+                    View resultView = (View) findViewById.invoke(object, value);
+
+                    Method mViewMethod = resultView.getClass().getMethod(setCommonListener, setCommonObjectListener);
+
+                    //动态代理监听第三个要素
+                    Object proxy = Proxy.newProxyInstance(setCommonListener.getClass().getClassLoader(),
+                            new Class[]{setCommonObjectListener},
+                            new InvocationHandler() {
+                                @Override
+                                public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+                                    return declareMethod.invoke(object, null);
+                                }
+                            });
+                    mViewMethod.invoke(resultView, proxy);
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+        }
     }
 
     private static void injectOnClick(Object object) {

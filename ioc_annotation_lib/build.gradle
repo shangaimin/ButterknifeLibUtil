@@ -35,3 +35,22 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
+
+//uploadArchives {
+//    configuration = configurations.archives
+//    repositories {
+//        mavenDeployer {
+//            repository(url: 'https://sugaoxin-maven.pkg.coding.net/repository/MobileGroupProject/core_repository/') {
+//                authentication(userName: 'android-1662426776900', password: 'ad3c5cdc29a339ed65a9cf43ac775d42ba3e2d7e')
+//            }
+//
+//            pom.project {
+//                version '1.0.0'
+//                artifactId 'ioc_annotation_lib'
+//                groupId 'com.sgx.ioc_annotation_lib'
+//                packaging 'aar'
+//                description 'version 1.0.0'
+//            }
+//        }
+//    }
+//}
