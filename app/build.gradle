@@ -9,11 +9,28 @@ android {
     defaultConfig {
         applicationId "com.sgx.kotlin"
         minSdk 21
-        targetSdk 32
+        targetSdk 25
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders = [
+                JPUSH_PKGNAME : "com.sgx.kotlin",
+                JPUSH_APPKEY : "ce87b182da2d702c71ecb4ec", //JPush 上注册的包名对应的 Appkey.
+                JPUSH_CHANNEL : "developer-default", //暂时填写默认值即可.
+                MEIZU_APPKEY : "MZ-魅族的APPKEY",
+                MEIZU_APPID : "MZ-魅族的APPID",
+                XIAOMI_APPID : "MI-小米的APPID",
+                XIAOMI_APPKEY : "MI-小米的APPKEY",
+                OPPO_APPKEY : "OP-oppo的APPKEY",
+                OPPO_APPID : "OP-oppo的APPID",
+                OPPO_APPSECRET : "OP-oppo的APPSECRET",
+                VIVO_APPKEY : "vivo的APPKEY",
+                VIVO_APPID : "vivo的APPID",
+                HONOR_APPID : "Honor的APP ID"
+        ]
+
     }
 
     buildTypes {
@@ -29,6 +46,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
 }
 
 dependencies {
@@ -44,5 +62,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1"
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    // 此处以JPush 5.0.0 版本为例，5.0.0 版本开始可以自动拉取 JCore 包，无需另外配置
+    implementation 'cn.jiguang.sdk:jpush:5.0.0'
 
 }
