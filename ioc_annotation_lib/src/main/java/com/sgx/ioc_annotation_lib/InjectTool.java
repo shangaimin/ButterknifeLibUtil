@@ -22,8 +22,6 @@ public class InjectTool {
         injectSetContentView(object);
         injectBindView(object);
         injectOnClick(object);
-
-
         //通用适配事件代码
         injectEvent(object);
     }
