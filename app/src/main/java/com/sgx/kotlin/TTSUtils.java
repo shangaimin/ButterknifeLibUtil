@@ -1,13 +1,18 @@
 package com.sgx.kotlin;
 
+import android.app.Service;
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.os.Vibrator;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class TTSUtils extends UtteranceProgressListener {
@@ -16,6 +21,10 @@ public class TTSUtils extends UtteranceProgressListener {
     private static TTSUtils singleton;
     private TextToSpeech textToSpeech; // 系统语音播报类
     private boolean isSuccess = true;
+    private String text;
+    private Vibrator vibrator;
+    private int count=0;
+    public static final SimpleDateFormat sdf=new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
 
     public static TTSUtils getInstance(Context context) {
         if (singleton == null) {
@@ -48,27 +57,38 @@ public class TTSUtils extends UtteranceProgressListener {
 
     }
 
-    public void playText(String playText) {
+    public void playText(String playText,boolean isNewMessage) {
 
         if (!isSuccess) {
             Toast.makeText(mContext, "系统不支持中文播报", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (ismServiceConnectionUsable(textToSpeech)) {//没有被回收
-            textToSpeech.speak(playText, TextToSpeech.QUEUE_ADD, null, "jiance");
-        } else {//被回收了不可用状态
-            textToSpeech = new TextToSpeech(MyApplication.getmContext(), status -> {
-                if (status == TextToSpeech.SUCCESS) {
-                    int result = textToSpeech.setLanguage(Locale.CHINA);
-                    if (result != TextToSpeech.LANG_COUNTRY_AVAILABLE
-                            && result != TextToSpeech.LANG_AVAILABLE) {
-                    }
-                    textToSpeech.speak(playText, TextToSpeech.QUEUE_ADD, null, "jiance");
-                } else {
-                    Log.e("eeee", "TTS初始化失败！");
-                }
-            }, "com.iflytek.speechcloud");//科大讯飞语音引擎
+        if(isNewMessage){
+            count=0;
         }
+        this.text=playText;
+        count++;
+//        if (ismServiceConnectionUsable(textToSpeech)) {//没有被回收
+//            textToSpeech.speak(playText, TextToSpeech.QUEUE_ADD, null, "jiance");
+//        } else {//被回收了不可用状态
+        textToSpeech = new TextToSpeech(MyApplication.getmContext(), status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                int result = textToSpeech.setLanguage(Locale.CHINA);
+                if (result != TextToSpeech.LANG_COUNTRY_AVAILABLE
+                        && result != TextToSpeech.LANG_AVAILABLE) {
+                }
+                textToSpeech.speak(playText, TextToSpeech.QUEUE_ADD, null, "jiance");
+            } else {
+                Log.e("eeee", "TTS初始化失败！");
+            }
+        }, "com.iflytek.speechcloud");//科大讯飞语音引擎
+//        }
+        textToSpeech.setOnUtteranceProgressListener(this);
+
+        vibrator = (Vibrator) MyApplication.getmContext().getSystemService(Service.VIBRATOR_SERVICE);
+//        vibrator.vibrate(30000);
+
+
     }
 
     public void stopSpeak() {
@@ -86,7 +106,19 @@ public class TTSUtils extends UtteranceProgressListener {
 
     @Override
     public void onDone(String utteranceId) {
-
+        Log.e("eeeee",count+"");
+        if(count>=3){
+            return;
+        }
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION) //key
+                .build();
+        vibrator.vibrate(new long[]{
+                0,
+                3000,
+        }, -1, audioAttributes);
+        playText(text,false);
     }
 
     @Override
